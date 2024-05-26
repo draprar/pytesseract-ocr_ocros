@@ -6,6 +6,6 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 image_path = 'img.png'
 image = Image.open(image_path)
 
-text = pytesseract.image_to_string(image)
+text = pytesseract.image_to_string(image, lang="pol")
 
 print(text)
