@@ -1,10 +1,15 @@
 from PIL import Image
 import pytesseract
 import os
+import sys
 
-# Specify Tesseract OCR executable path
-TESSERACT_CMD = os.getenv('TESSERACT_CMD', r'C:\Program Files\Tesseract-OCR\tesseract.exe')
-pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
+# Set the Tesseract executable path based on the platform
+if sys.platform.startswith('win32'):
+    # For Windows, set Tesseract path to default
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+else:
+    # For Linux (Ubuntu-based) or other systems, set the Tesseract path
+    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
 
 
 def load_image(image_path):
