@@ -5,6 +5,8 @@ import ocros_logic
 
 
 class OCRosApp:
+    """Main application class for OCRos GUI."""
+
     def __init__(self, root):
         self.root = root
         self.root.title("OCRos")
@@ -21,6 +23,7 @@ class OCRosApp:
         self.setup_ui()
 
     def setup_ui(self):
+        """Set up the user interface elements."""
         self.img_canvas = tk.Canvas(self.root, cursor="cross")
         self.img_canvas.pack(pady=10)
 
@@ -36,15 +39,19 @@ class OCRosApp:
         self.text_box = Text(self.root, wrap='word', height=10)
         self.text_box.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-        # Add mouse events to capture crop coordinates
+        # Bind mouse events for cropping functionality
         self.img_canvas.bind("<ButtonPress-1>", self.on_mouse_press)
         self.img_canvas.bind("<B1-Motion>", self.on_mouse_drag)
         self.img_canvas.bind("<ButtonRelease-1>", self.on_mouse_release)
 
     def upload_image(self):
-        self.uploaded_image_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")])
+        """Handle image upload and display."""
+        self.uploaded_image_path = filedialog.askopenfilename(
+            filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")]
+        )
         if not self.uploaded_image_path:
             return
+
         try:
             self.original_image = ocros_logic.load_image(self.uploaded_image_path)
             self.cropped_image = self.original_image.copy()
@@ -55,6 +62,7 @@ class OCRosApp:
             messagebox.showerror("Error", f"Failed to load image: {e}")
 
     def show_image(self, image):
+        """Display image on the canvas."""
         img = image.copy()
         img.thumbnail((300, 300))
         img_tk = ImageTk.PhotoImage(img)
@@ -63,33 +71,32 @@ class OCRosApp:
         self.img_canvas.image = img_tk
 
     def on_mouse_press(self, event):
-        # Store the starting position and reset any previous rectangle
+        """Store the starting position of the cropping rectangle."""
         self.start_x, self.start_y = event.x, event.y
         if self.rect_id:
             self.img_canvas.delete(self.rect_id)
         self.rect_id = None
 
     def on_mouse_drag(self, event):
-        # Update the end position and draw the rectangle
+        """Draw the cropping rectangle on the canvas."""
         self.end_x, self.end_y = event.x, event.y
         if self.rect_id:
             self.img_canvas.delete(self.rect_id)
         self.rect_id = self.img_canvas.create_rectangle(
-            self.start_x, self.start_y, self.end_x, self.end_y,
-            outline="red", width=2
+            self.start_x, self.start_y, self.end_x, self.end_y, outline="red", width=2
         )
 
     def on_mouse_release(self, event):
-        # Finalize the cropping coordinates
+        """Finalize the cropping coordinates."""
         self.end_x, self.end_y = event.x, event.y
         if self.rect_id:
             self.img_canvas.delete(self.rect_id)
         self.rect_id = self.img_canvas.create_rectangle(
-            self.start_x, self.start_y, self.end_x, self.end_y,
-            outline="red", width=2
+            self.start_x, self.start_y, self.end_x, self.end_y, outline="red", width=2
         )
 
     def apply_crop(self):
+        """Crop the selected image region and display it."""
         if self.original_image:
             crop_box = ocros_logic.calculate_crop_box(
                 self.start_x, self.start_y, self.end_x, self.end_y,
@@ -100,8 +107,8 @@ class OCRosApp:
             self.show_image(self.cropped_image)
 
     def extract_text(self):
+        """Extract text from the cropped image and display it in the text box."""
         if self.cropped_image:
-            # Get the raw text from OCR and clean it up
             text = ocros_logic.extract_text_from_image(self.cropped_image, lang="pol").strip()
             self.text_box.delete(1.0, tk.END)
             self.text_box.insert(tk.END, text)
